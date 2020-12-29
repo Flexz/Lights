@@ -15,14 +15,16 @@ static void Dma_Init();
 static void TIM1_Init(void);
 static void TIM6_Init(void);
 
+static void UpdateByte(uint16_t *ptr, uint8_t value);
+
 static volatile int enabled;
 
 //uint16_t ticks[10] = {50, 100, 150, 200, 250, 300, 350, 400, 450, 0};
 //uint32_t ticks[10] = {100, 100, 100, 100, 100, 100, 100, 100, 100, 100};
 //uint16_t ticks[10] = {100, 200, 300, 100, 100, 100, 100, 100, 100, 100};
 //uint16_t ticks[10] = {100, 200, 300, 200, 300, 200, 300, 200, 300, 200};
-uint16_t bits1[TOTAL_BITS] = {0, 1};
-uint16_t bits2[TOTAL_BITS] = {0, 1};
+uint16_t bits1[TOTAL_BITS+1] = {0,1};
+uint16_t bits2[TOTAL_BITS+1] = {0,1};
 
 
 uint16_t *bitsCurrent = bits1;
@@ -58,9 +60,14 @@ void StripLLSet(int channel, rgb *data, int cnt)
 {
 	for(int i = 0; i < cnt; i++)
 	{
-		UpdateByte(bits1 + i*3 + 0, data[i].r * 255);
-		UpdateByte(bits1 + i*3 + 1, data[i].g * 255);
-		UpdateByte(bits1 + i*3 + 2, data[i].b * 255);
+		uint8_t v;
+		v = data[i].r * 255;
+		UpdateByte(bits1 + i*24 + 0, v);
+		v = data[i].g * 255;
+		UpdateByte(bits1 + i*24 + 8, v);
+		v = data[i].b * 255;
+		//v = (v & 0xFC) + 1;
+		UpdateByte(bits1 + i*24 + 16, v);
 	}
 }
 
@@ -69,6 +76,8 @@ void StripLLEnable(int enable)
 	enabled = enable;
 	if(enable)
 	{
+		bitsCurrent[TOTAL_BITS-1] = 0;
+		bitsCurrent[TOTAL_BITS-2] = T_ZERO;
 		HAL_TIM_PWM_Start_DMA(&htim1, TIM_CHANNEL_1, (uint32_t*)bitsCurrent, TOTAL_BITS);
 	}
 }
@@ -83,7 +92,7 @@ static void TIM1_Init(void)
   htim1.Instance = TIM1;
   htim1.Init.Prescaler = 0;
   htim1.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim1.Init.Period = 500;
+  htim1.Init.Period = T_PULSE;
   htim1.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim1.Init.RepetitionCounter = 0;
   htim1.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
@@ -173,9 +182,23 @@ void Dma_Init()
 void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim)
 {
 	htim6.Instance->CNT = 0;
+	HAL_TIM_Base_Start_IT(&htim6);
 	//htim6.Instance->CR1 |= TIM_CR1_CEN;
-	__HAL_TIM_ENABLE_IT(&htim6, TIM_IT_UPDATE);
-	__HAL_TIM_ENABLE(&htim6);
+	//__HAL_TIM_ENABLE_IT(&htim6, TIM_IT_UPDATE);
+	//__HAL_TIM_ENABLE(&htim6);
+}
+
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+	if(htim == &htim6)
+	{
+		HAL_TIM_Base_Stop_IT(&htim6);
+		bitsCurrent[TOTAL_BITS-1] = 0;
+		bitsCurrent[TOTAL_BITS-2] = T_ZERO;
+		//enabled = 0;
+		if(enabled)
+			HAL_TIM_PWM_Start_DMA(&htim1, TIM_CHANNEL_1, (uint32_t*)bitsCurrent, TOTAL_BITS);
+	}
 }
 
 /**
@@ -184,9 +207,13 @@ void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim)
  */
 void TIM6_DAC_IRQHandler()
 {
+	if(__HAL_TIM_GET_FLAG(&htim6, TIM_FLAG_UPDATE))
+	{
+
+	}
 	HAL_TIM_IRQHandler(&htim6);
-	if(enabled)
-		HAL_TIM_PWM_Start_DMA(&htim1, TIM_CHANNEL_1, (uint32_t*)bitsCurrent, TOTAL_BITS);
+
+
 }
 
 void DMA1_Stream0_IRQHandler()

@@ -110,6 +110,12 @@ rgb hsv2rgb(hsv in)
         out.b = q;
         break;
     }
+    if(out.r > 1.0)out.r = 1.0;
+    if(out.g > 1.0)out.g = 1.0;
+    if(out.b > 1.0)out.b = 1.0;
+    if(out.r < 0.0)out.r = 0.0;
+    if(out.g < 0.0)out.g = 0.0;
+    if(out.b < 0.0)out.b = 0.0;
     return out;
 }
 

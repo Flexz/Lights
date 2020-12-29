@@ -23,6 +23,7 @@ void StripInit()
 {
 	StripLLInit();
 	StripClear(rgb_create(0,0,0));
+	StripUpdate();
 }
 
 void LedSet(int channel, int idx, rgb color)
@@ -34,7 +35,7 @@ void LedSet(int channel, int idx, rgb color)
 	UpdateByte(arr + 3*idx + 2, color.b);*/
 }
 
-void StripSet(int channel, rgb *src, int cnt)
+void StripSetChannel(int channel, rgb *src, int cnt)
 {
 	if(cnt > CFG_STRIP_LEDS)
 		cnt = CFG_STRIP_LEDS;
@@ -44,10 +45,13 @@ void StripSet(int channel, rgb *src, int cnt)
 	}
 }
 
+void StripSetLed(int channel, int led, rgb color)
+{
+	LedSet(channel, led, color);
+}
+
 void StripClear(rgb color)
 {
-	rgb clearColor;
-	clearColor.r = clearColor.g = clearColor.b = 0;
 	for(int ch = 0; ch < CFG_STRIP_CHANNELS; ch++)
 	{
 		for(int idx = 0; idx < CFG_STRIP_LEDS; idx++)

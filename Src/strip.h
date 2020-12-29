@@ -18,7 +18,9 @@ void StripInit();
  * @param src
  * @param cnt
  */
-void StripSet(int channel, rgb *src, int cnt);
+void StripSetChannel(int channel, rgb *src, int cnt);
+
+void StripSetLed(int channel, int led, rgb color);
 
 /**
  * Set all channels/leds to the same color

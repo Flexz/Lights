@@ -23,6 +23,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "strip.h"
+#include "config.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -96,19 +97,46 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   double c = 0.0;
+  hsv hcv_color;
+  hcv_color.h = 0.0;
+  hcv_color.s = 1.0;
+  hcv_color.v = 0.1;
+  int offset = 0;
   while (1)
   {
-	  StripClear(rgb_create(c, 0, 0));
+	  if(1)
+	  {
+		  for(int i = 0; i < CFG_STRIP_LEDS; i++)
+		  {
+			  int v = i + offset;
+			  while(v > 360)
+				  v -= 360;
+			  hcv_color.h = v;
+			  StripSetLed(0, i, hsv2rgb(hcv_color));
+		  }
+		  offset++;
+		  if(offset > 360 * 3)
+			  offset -= 360;
+	  }
+	  else
+	  {
+		  StripClear(hsv2rgb(hcv_color));
+	  }
+	  //StripClear(rgb_create(c, 0, 0));
 	  StripUpdate();
-	  c += 1.0 / 256;
-	  if(c > 0.2)
+	  hcv_color.h += 0.5;
+	  c += 0.01;
+	  if(hcv_color.h >= 360)
+		  hcv_color.h = 0;
+	  if(c > 1.0)
 		  c = 0.0;
+
     /* USER CODE END WHILE */
-	  HAL_Delay(150);
+	  HAL_Delay(10);
 	  HAL_GPIO_WritePin(GPIOB, LD2_Pin, GPIO_PIN_RESET);
 	  HAL_GPIO_WritePin(GPIOB, LD3_Pin, GPIO_PIN_SET);
 
-	  HAL_Delay(150);
+	  HAL_Delay(10);
 	  HAL_GPIO_WritePin(GPIOB, LD2_Pin, GPIO_PIN_SET);
 	  HAL_GPIO_WritePin(GPIOB, LD3_Pin, GPIO_PIN_RESET);
 
