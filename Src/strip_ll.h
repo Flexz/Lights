@@ -15,17 +15,13 @@
 //#define LED_COUNT		100
 #define TOTAL_BITS		(BITS_PER_LED * CFG_STRIP_LEDS)
 
-//500 ticks -> 2.5us
-#define T_PULSE	500
-//#define T_PULSE	250
-//#define T_ONE	125
-//#define T_ZERO	50 //75 / 500 =
+//200Mhz / (Prescaler+1) / Pulse
+//200M / 1 / 250 = 800.000, Period - 1.25uS, 5nS per tick
+#define T_PULSE	250 //
+#define T_PRESCALER 0
 
-
-#define T_ONE	250 //100 / 500 * 2.5 = 0.5us
-#define T_ZERO	100 //250 / 500 * 2.5 = 1.25us
-//#define T_ONE	170
-//#define T_ZERO	80 //75 / 500 =
+#define T_ONE	120 //120*5 = 600 (1200 / 2)
+#define T_ZERO	50 //50*5 = 250 (500 / 2)
 
 
 void StripLLInit(void);
