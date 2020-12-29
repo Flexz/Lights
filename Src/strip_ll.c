@@ -1,7 +1,7 @@
 /*
  * strip_ll.c
  *
- *  Created on: 28 дек. 2020 г.
+ *  Created on: 28 пїЅпїЅпїЅ. 2020 пїЅ.
  *      Author: Flexz
  */
 
@@ -58,9 +58,9 @@ void StripLLSet(int channel, rgb *data, int cnt)
 {
 	for(int i = 0; i < cnt; i++)
 	{
-		UpdateByte(bits1 + i*3 + 0, data[i].r * 256);
-		UpdateByte(bits1 + i*3 + 1, data[i].g * 256);
-		UpdateByte(bits1 + i*3 + 2, data[i].b * 256);
+		UpdateByte(bits1 + i*3 + 0, data[i].r * 255);
+		UpdateByte(bits1 + i*3 + 1, data[i].g * 255);
+		UpdateByte(bits1 + i*3 + 2, data[i].b * 255);
 	}
 }
 

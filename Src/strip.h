@@ -1,7 +1,7 @@
 /*
  * strip.h
  *
- *  Created on: 24 дек. 2020 г.
+ *  Created on: 24 пїЅпїЅпїЅ. 2020 пїЅ.
  *      Author: Flexz
  */
 
@@ -12,10 +12,22 @@
 
 void StripInit();
 
-void StripUpdate(int channel, rgb *src, int cnt);
+/**
+ * Set specified channel colors
+ * @param channel
+ * @param src
+ * @param cnt
+ */
+void StripSet(int channel, rgb *src, int cnt);
 
-void StripClear();
+/**
+ * Set all channels/leds to the same color
+ */
+void StripClear(rgb color);
 
-void StripSet(rgb color);
+/**
+ * Translate front buffer to color memory
+ */
+void StripUpdate();
 
 #endif /* STRIP_H_ */

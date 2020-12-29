@@ -87,15 +87,22 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  StripInit();
-  /* USER CODE BEGIN 2 */
 
+  /* USER CODE BEGIN 2 */
+  StripInit();
+  StripLLEnable(1);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  double c = 0.0;
   while (1)
   {
+	  StripClear(rgb_create(c, 0, 0));
+	  StripUpdate();
+	  c += 1.0 / 256;
+	  if(c > 0.2)
+		  c = 0.0;
     /* USER CODE END WHILE */
 	  HAL_Delay(150);
 	  HAL_GPIO_WritePin(GPIOB, LD2_Pin, GPIO_PIN_RESET);

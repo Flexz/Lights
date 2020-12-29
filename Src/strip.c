@@ -1,7 +1,7 @@
 /*
  * strip.c
  *
- *  Created on: 24 дек. 2020 г.
+ *  Created on: 24 пїЅпїЅпїЅ. 2020 пїЅ.
  *      Author: Flexz
  */
 
@@ -22,6 +22,7 @@ rgb strip[CFG_STRIP_CHANNELS][CFG_STRIP_LEDS];
 void StripInit()
 {
 	StripLLInit();
+	StripClear(rgb_create(0,0,0));
 }
 
 void LedSet(int channel, int idx, rgb color)
@@ -33,7 +34,7 @@ void LedSet(int channel, int idx, rgb color)
 	UpdateByte(arr + 3*idx + 2, color.b);*/
 }
 
-void StripUpdate(int channel, rgb *src, int cnt)
+void StripSet(int channel, rgb *src, int cnt)
 {
 	if(cnt > CFG_STRIP_LEDS)
 		cnt = CFG_STRIP_LEDS;
@@ -43,14 +44,7 @@ void StripUpdate(int channel, rgb *src, int cnt)
 	}
 }
 
-void StripClear()
-{
-	rgb clearColor;
-	clearColor.r = clearColor.g = clearColor.b = 0;
-	StripSet(clearColor);
-}
-
-void StripSet(rgb color)
+void StripClear(rgb color)
 {
 	rgb clearColor;
 	clearColor.r = clearColor.g = clearColor.b = 0;
@@ -61,4 +55,9 @@ void StripSet(rgb color)
 			LedSet(ch, idx, color);
 		}
 	}
+}
+
+void StripUpdate()
+{
+	StripLLSet(0, strip[0], CFG_STRIP_LEDS);
 }

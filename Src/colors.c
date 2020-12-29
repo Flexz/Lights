@@ -1,7 +1,7 @@
 /*
  * colors.c
  *
- *  Created on: 24 дек. 2020 г.
+ *  Created on: 24 пїЅпїЅпїЅ. 2020 пїЅ.
  *      Author: Flexz
  */
 
@@ -111,6 +111,12 @@ rgb hsv2rgb(hsv in)
         break;
     }
     return out;
+}
+
+rgb rgb_create(double r, double g, double b)
+{
+	rgb v = {.r = r, .g = g, .b = b};
+	return v;
 }
 
 #endif /* COLORS_C_ */

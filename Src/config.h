@@ -1,7 +1,7 @@
 /*
  * config.h
  *
- *  Created on: 28 дек. 2020 г.
+ *  Created on: 28 пїЅпїЅпїЅ. 2020 пїЅ.
  *      Author: Flexz
  */
 
@@ -11,6 +11,6 @@
 ///Channel count (number of strips connected to the board)
 #define CFG_STRIP_CHANNELS	1
 ///LEDs per strip
-#define CFG_STRIP_LEDS		100
+#define CFG_STRIP_LEDS		50
 
 #endif /* CONFIG_H_ */

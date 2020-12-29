@@ -1,7 +1,7 @@
 /*
  * colors.h
  *
- *  Created on: 24 дек. 2020 г.
+ *  Created on: 24 пїЅпїЅпїЅ. 2020 пїЅ.
  *      Author: Flexz
  */
 
@@ -22,5 +22,7 @@ typedef struct {
 
 hsv rgb2hsv(rgb in);
 rgb hsv2rgb(hsv in);
+
+rgb rgb_create(double r, double g, double b);
 
 #endif /* COLORS_H_ */
