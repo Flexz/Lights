@@ -56,8 +56,75 @@ static void MX_GPIO_Init(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
+int raibowOffset = 0;
 /* USER CODE BEGIN 0 */
+void Rainbow(int speed)
+{
+	hsv hcv_color;
+	hcv_color.h = 0.0;
+	hcv_color.s = 1.0;
+	hcv_color.v = 0.1;
 
+	for(int i = 0; i < CFG_STRIP_LEDS; i++)
+	{
+		int v = (i*5) + raibowOffset;
+		while(v > 360)
+			v -= 360;
+		hcv_color.h = v;
+		StripSetLed(0, i, hsv2rgb(hcv_color));
+	}
+	raibowOffset += speed;
+	if(raibowOffset > 360 * 3)
+		raibowOffset -= 360;
+}
+
+#define STAR_TAIL	10
+int shootingStarStep = 0;
+void ShootingStar()
+{
+	hsv hcv_color;
+	hcv_color.h = 0.0;
+	hcv_color.s = 1.0;
+	hcv_color.v = 0.0;
+
+	StripClear(hsv2rgb(hcv_color));
+
+	hcv_color.h = 0.0;
+	hcv_color.s = 0.0;
+	hcv_color.v = 0.5;
+	for(int i = shootingStarStep; i > shootingStarStep - STAR_TAIL; i--)
+	{
+		hcv_color.v -= 0.05;
+		StripSetLed(0, i, hsv2rgb(hcv_color));
+	}
+	shootingStarStep++;
+	if(shootingStarStep > 100)
+		shootingStarStep = 0;
+}
+
+void Flag()
+{
+	rgb color;
+	color = rgb_create(0.3, 0, 0);
+
+	int i = 0;
+	for(i = 0; i < CFG_STRIP_LEDS / 3; i++)
+	{
+		StripSetLed(0, i, color);
+	}
+
+	color = rgb_create(0, 0, 0.3);
+	for(; i < 3 * CFG_STRIP_LEDS / 4; i++)
+	{
+		StripSetLed(0, i, color);
+	}
+
+	color = rgb_create(0.3, 0.3, 0.3);
+	for(; i < CFG_STRIP_LEDS; i++)
+	{
+		StripSetLed(0, i, color);
+	}
+}
 /* USER CODE END 0 */
 
 /**
@@ -66,25 +133,12 @@ static void MX_GPIO_Init(void);
   */
 int main(void)
 {
-  /* USER CODE BEGIN 1 */
-
-  /* USER CODE END 1 */
-
-  /* MCU Configuration--------------------------------------------------------*/
-
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
   HAL_Init();
 
-  /* USER CODE BEGIN Init */
-
-  /* USER CODE END Init */
 
   /* Configure the system clock */
   SystemClock_Config();
-
-  /* USER CODE BEGIN SysInit */
-
-  /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
@@ -102,41 +156,53 @@ int main(void)
   hcv_color.s = 1.0;
   hcv_color.v = 0.1;
   int offset = 0;
+  int num = 0;
+  int buttonTrg = 0;
   while (1)
   {
-	  if(1)
+	  if(HAL_GPIO_ReadPin(USER_Btn_GPIO_Port, USER_Btn_Pin) == GPIO_PIN_SET)
 	  {
-		  for(int i = 0; i < CFG_STRIP_LEDS; i++)
+		  if(buttonTrg == 4)
 		  {
-			  int v = i + offset;
-			  while(v > 360)
-				  v -= 360;
-			  hcv_color.h = v;
-			  StripSetLed(0, i, hsv2rgb(hcv_color));
+			  num++;
+			  if(num > 4)
+				  num = 0;
 		  }
-		  offset++;
-		  if(offset > 360 * 3)
-			  offset -= 360;
+		  buttonTrg++;
 	  }
 	  else
 	  {
-		  StripClear(hsv2rgb(hcv_color));
+		  buttonTrg = 0;
 	  }
-	  //StripClear(rgb_create(c, 0, 0));
+	  switch(num)
+	  {
+	  case 0:
+		  StripClear(hsv2rgb(hcv_color));
+		  hcv_color.h += 0.5;
+		  if(hcv_color.h >= 360)
+			  hcv_color.h = 0;
+		  break;
+	  case 1:
+		  Rainbow(2);
+		  break;
+	  case 2:
+		  Rainbow(5);
+		  break;
+	  case 3:
+		  ShootingStar();
+		  break;
+	  case 4:
+		  Flag();
+		  break;
+	  }
 	  StripUpdate();
-	  hcv_color.h += 0.5;
-	  c += 0.01;
-	  if(hcv_color.h >= 360)
-		  hcv_color.h = 0;
-	  if(c > 1.0)
-		  c = 0.0;
 
     /* USER CODE END WHILE */
-	  HAL_Delay(10);
+	  HAL_Delay(20);
 	  HAL_GPIO_WritePin(GPIOB, LD2_Pin, GPIO_PIN_RESET);
 	  HAL_GPIO_WritePin(GPIOB, LD3_Pin, GPIO_PIN_SET);
 
-	  HAL_Delay(10);
+	  HAL_Delay(20);
 	  HAL_GPIO_WritePin(GPIOB, LD2_Pin, GPIO_PIN_SET);
 	  HAL_GPIO_WritePin(GPIOB, LD3_Pin, GPIO_PIN_RESET);
 
@@ -227,7 +293,7 @@ static void MX_GPIO_Init(void)
 
   /*Configure GPIO pin : USER_Btn_Pin */
   GPIO_InitStruct.Pin = USER_Btn_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(USER_Btn_GPIO_Port, &GPIO_InitStruct);
 

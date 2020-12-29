@@ -47,6 +47,10 @@ void StripSetChannel(int channel, rgb *src, int cnt)
 
 void StripSetLed(int channel, int led, rgb color)
 {
+	if(led >= CFG_STRIP_LEDS)
+		return;
+	if(led < 0)
+		return;
 	LedSet(channel, led, color);
 }
 

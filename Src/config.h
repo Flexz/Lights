@@ -11,6 +11,6 @@
 ///Channel count (number of strips connected to the board)
 #define CFG_STRIP_CHANNELS	1
 ///LEDs per strip
-#define CFG_STRIP_LEDS		51
+#define CFG_STRIP_LEDS		50
 
 #endif /* CONFIG_H_ */

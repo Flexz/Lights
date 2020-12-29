@@ -23,11 +23,11 @@ static volatile int enabled;
 //uint32_t ticks[10] = {100, 100, 100, 100, 100, 100, 100, 100, 100, 100};
 //uint16_t ticks[10] = {100, 200, 300, 100, 100, 100, 100, 100, 100, 100};
 //uint16_t ticks[10] = {100, 200, 300, 200, 300, 200, 300, 200, 300, 200};
-uint16_t bits1[TOTAL_BITS+1] = {0,1};
-uint16_t bits2[TOTAL_BITS+1] = {0,1};
+volatile uint16_t bits1[TOTAL_BITS+1] = {0,1};
+volatile uint16_t bits2[TOTAL_BITS+1] = {0,1};
 
 
-uint16_t *bitsCurrent = bits1;
+//uint16_t *bitsCurrent = bits1;
 
 
 void StripLLInit()
@@ -47,8 +47,8 @@ void StripLLInit()
 		bits1[i] = 100;
 		bits2[i] = 100;
 	}
-	bits1[TOTAL_BITS-1] = 0;
-	bits2[TOTAL_BITS-1] = 0;
+	bits1[TOTAL_BITS] = 0;
+	bits2[TOTAL_BITS] = 0;
 	enabled = 0;
 
 	Dma_Init();
@@ -66,9 +66,10 @@ void StripLLSet(int channel, rgb *data, int cnt)
 		v = data[i].g * 255;
 		UpdateByte(bits1 + i*24 + 8, v);
 		v = data[i].b * 255;
-		//v = (v & 0xFC) + 1;
+		v = (v & 0xFC) + 0;
 		UpdateByte(bits1 + i*24 + 16, v);
 	}
+	bits1[TOTAL_BITS] = 0;
 }
 
 void StripLLEnable(int enable)
@@ -76,9 +77,8 @@ void StripLLEnable(int enable)
 	enabled = enable;
 	if(enable)
 	{
-		bitsCurrent[TOTAL_BITS-1] = 0;
-		bitsCurrent[TOTAL_BITS-2] = T_ZERO;
-		HAL_TIM_PWM_Start_DMA(&htim1, TIM_CHANNEL_1, (uint32_t*)bitsCurrent, TOTAL_BITS);
+		bits1[TOTAL_BITS] = 0;
+		HAL_TIM_PWM_Start_DMA(&htim1, TIM_CHANNEL_1, (uint32_t*)bits1, TOTAL_BITS+1);
 	}
 }
 
@@ -182,6 +182,8 @@ void Dma_Init()
 void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim)
 {
 	htim6.Instance->CNT = 0;
+	//for(int i = 0; i < 1000; i++)__NOP();
+	HAL_TIM_PWM_Stop_DMA(&htim1, TIM_CHANNEL_1);
 	HAL_TIM_Base_Start_IT(&htim6);
 	//htim6.Instance->CR1 |= TIM_CR1_CEN;
 	//__HAL_TIM_ENABLE_IT(&htim6, TIM_IT_UPDATE);
@@ -192,12 +194,14 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
 	if(htim == &htim6)
 	{
+		//HAL_TIM_PWM_Stop_DMA(&htim1, TIM_CHANNEL_1);
 		HAL_TIM_Base_Stop_IT(&htim6);
-		bitsCurrent[TOTAL_BITS-1] = 0;
-		bitsCurrent[TOTAL_BITS-2] = T_ZERO;
+		bits1[TOTAL_BITS] = 0;
+		//bitsCurrent[TOTAL_BITS-1] = T_ZERO;
+		//bitsCurrent[TOTAL_BITS-2] = T_ZERO;
 		//enabled = 0;
 		if(enabled)
-			HAL_TIM_PWM_Start_DMA(&htim1, TIM_CHANNEL_1, (uint32_t*)bitsCurrent, TOTAL_BITS);
+			HAL_TIM_PWM_Start_DMA(&htim1, TIM_CHANNEL_1, (uint32_t*)bits1, TOTAL_BITS+1);
 	}
 }
 
