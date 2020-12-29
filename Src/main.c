@@ -81,6 +81,54 @@ void ShootingStar()
 		shootingStarStep = 0;
 }
 
+int fireworkStep = 0;
+int wave[20] = {20, 40, 60, 80, 100, 100, 100, 100, 100, 90,
+                80, 70, 60, 50, 40,  30,  20,  10,  10,  10};
+void Firework()
+{
+	hsv hcv_color;
+	hcv_color.h = 0.0;
+	hcv_color.s = 1.0;
+	hcv_color.v = 0.0;
+
+	StripClear(hsv2rgb(hcv_color));
+	if(fireworkStep < 100)
+	{
+		//shoot
+		hcv_color.h = 0.0;
+		hcv_color.s = 0.0;
+		hcv_color.v = 0.5;
+		for(int i = fireworkStep; i > fireworkStep - STAR_TAIL; i--)
+		{
+			hcv_color.v -= 0.05;
+			StripSetLed(0, i, hsv2rgb(hcv_color));
+		}
+	}
+	else
+	{
+		hcv_color.h = 0.0;
+		hcv_color.s = 1.0;
+		hcv_color.v = 0.2;
+		
+		for(int i = CFG_STRIP_LEDS-1; i >= 0; i--)
+		{
+			int idx = CFG_STRIP_LEDS-i;//from top
+			hcv_color.h = idx * 360 / CFG_STRIP_LEDS;	
+			int waveIdx = (fireworkStep - 100) - idx;
+			if(waveIdx >= 20)
+				hcv_color.v = 0;
+			else if(waveIdx < 0)
+			    hcv_color.v = 0;
+			else 
+				hcv_color.v = (float)(wave[waveIdx]) / 1000;
+			StripSetLed(0, i, hsv2rgb(hcv_color));
+		}
+	}
+	fireworkStep++;
+	if(fireworkStep > 500)
+		fireworkStep = 0;
+}
+
 void Flag()
 {
 	rgb color;
@@ -170,6 +218,9 @@ int main(void)
 		  ShootingStar();
 		  break;
 	  case 4:
+		  Firework();
+		  break;
+	  case 5:
 		  Flag();
 		  break;
 	  }
