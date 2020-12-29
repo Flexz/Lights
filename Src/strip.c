@@ -9,14 +9,6 @@
 #include "strip.h"
 #include "strip_ll.h"
 
-TIM_HandleTypeDef htim1;
-TIM_HandleTypeDef htim6;
-
-static void Dma_Init();
-static void TIM1_Init(void);
-static void TIM6_Init(void);
-
-//uint16_t *bitsCurrent = bits1;
 rgb strip[CFG_STRIP_CHANNELS][CFG_STRIP_LEDS];
 
 void StripInit()
@@ -29,10 +21,6 @@ void StripInit()
 void LedSet(int channel, int idx, rgb color)
 {
 	strip[channel][idx] = color;
-	/*uint16_t *arr = bitsCurrent;
-	UpdateByte(arr + 3*idx + 0, color.r);
-	UpdateByte(arr + 3*idx + 1, color.g);
-	UpdateByte(arr + 3*idx + 2, color.b);*/
 }
 
 void StripSetChannel(int channel, rgb *src, int cnt)

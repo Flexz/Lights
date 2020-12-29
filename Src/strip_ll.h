@@ -18,7 +18,7 @@
 //200Mhz / (Prescaler+1) / Pulse
 //200M / 1 / 250 = 800.000, Period - 1.25uS, 5nS per tick
 #define T_PULSE	250 //
-#define T_PRESCALER 0
+#define T_PRESCALER 1
 
 #define T_ONE	120 //120*5 = 600 (1200 / 2)
 #define T_ZERO	50 //50*5 = 250 (500 / 2)

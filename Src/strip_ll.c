@@ -15,7 +15,7 @@ static void Dma_Init();
 static void TIM1_Init(void);
 static void TIM6_Init(void);
 
-static void UpdateByte(uint16_t *ptr, uint8_t value);
+static void UpdateByte(volatile uint16_t *ptr, uint8_t value);
 
 static volatile int enabled;
 
@@ -119,7 +119,7 @@ static void TIM1_Init(void)
   /* USER CODE BEGIN TIM1_Init 2 */
 
   /* USER CODE END TIM1_Init 2 */
-  HAL_TIM_MspPostInit(&htim1);
+  //HAL_TIM_MspPostInit(&htim1);
 
   //HAL_TIM_PWM_Start_DMA(&htim1, TIM_CHANNEL_1, (uint32_t*)bitsCurrent, TOTAL_BITS);
 }
@@ -194,12 +194,9 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
 	if(htim == &htim6)
 	{
-		//HAL_TIM_PWM_Stop_DMA(&htim1, TIM_CHANNEL_1);
 		HAL_TIM_Base_Stop_IT(&htim6);
 		bits1[TOTAL_BITS] = 0;
-		//bitsCurrent[TOTAL_BITS-1] = T_ZERO;
-		//bitsCurrent[TOTAL_BITS-2] = T_ZERO;
-		//enabled = 0;
+
 		if(enabled)
 			HAL_TIM_PWM_Start_DMA(&htim1, TIM_CHANNEL_1, (uint32_t*)bits1, TOTAL_BITS+1);
 	}
@@ -225,7 +222,7 @@ void DMA1_Stream0_IRQHandler()
 	HAL_DMA_IRQHandler(htim1.hdma[TIM_DMA_ID_CC1]);
 }
 
-void UpdateByte(uint16_t *ptr, uint8_t value)
+void UpdateByte(volatile uint16_t *ptr, uint8_t value)
 {
 	for(int i = 0; i < 8; i++)
 	{
