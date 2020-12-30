@@ -219,7 +219,7 @@ int main(void)
 		  if(buttonTrg == 4)
 		  {
 			  num++;
-			  if(num > 4)
+			  if(num > 5)
 				  num = 0;
 		  }
 		  buttonTrg++;
