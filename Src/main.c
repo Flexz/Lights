@@ -57,7 +57,7 @@ void Rainbow(int speed)
 		raibowOffset -= 360;
 }
 
-#define STAR_TAIL	10
+#define STAR_TAIL	8
 int shootingStarStep = 0;
 void ShootingStar()
 {
@@ -82,8 +82,16 @@ void ShootingStar()
 }
 
 int fireworkStep = 0;
-int wave[20] = {20, 40, 60, 80, 100, 100, 100, 100, 100, 90,
-                80, 70, 60, 50, 40,  30,  20,  10,  10,  10};
+#define FW_SETOFF	48
+#define FW_BLOW 	60
+#define FW_LENGTH	40
+int wave[FW_LENGTH] =
+{20, 40, 60, 80, 100, 100, 100, 100, 100, 90,
+ 80, 70, 60, 50, 40,  30,  20,  10,  10,  10,
+ 10, 10, 10, 10, 10,  10,  10,  10,  10,  10,
+ 10, 9, 8, 7, 6,  5,  4,  3,  2,  1,
+};
+
 void Firework()
 {
 	hsv hcv_color;
@@ -92,15 +100,33 @@ void Firework()
 	hcv_color.v = 0.0;
 
 	StripClear(hsv2rgb(hcv_color));
-	if(fireworkStep < 100)
+	if(fireworkStep < FW_SETOFF)
 	{
 		//shoot
+		HAL_Delay(25);
 		hcv_color.h = 0.0;
 		hcv_color.s = 0.0;
 		hcv_color.v = 0.5;
 		for(int i = fireworkStep; i > fireworkStep - STAR_TAIL; i--)
 		{
-			hcv_color.v -= 0.05;
+			hcv_color.v -= 0.8 / STAR_TAIL;
+			StripSetLed(0, i, hsv2rgb(hcv_color));
+		}
+	}
+	else if(fireworkStep < FW_BLOW)
+	{
+		HAL_Delay(50);
+		hcv_color.h = 0.0;
+		hcv_color.s = 0.1;
+		hcv_color.v = 1.0;
+		float v = 1.2 - (fireworkStep - FW_SETOFF) / 20.0;
+
+		for(int i = CFG_STRIP_LEDS-1; i >= CFG_STRIP_LEDS-STAR_TAIL*2; i--)
+		{
+			v -= 0.05;
+			hcv_color.v = v;
+			if(v > 1.0)
+				v = 1.0;
 			StripSetLed(0, i, hsv2rgb(hcv_color));
 		}
 	}
@@ -109,23 +135,24 @@ void Firework()
 		hcv_color.h = 0.0;
 		hcv_color.s = 1.0;
 		hcv_color.v = 0.2;
+		HAL_Delay(50);
 		
 		for(int i = CFG_STRIP_LEDS-1; i >= 0; i--)
 		{
 			int idx = CFG_STRIP_LEDS-i;//from top
 			hcv_color.h = idx * 360 / CFG_STRIP_LEDS;	
-			int waveIdx = (fireworkStep - 100) - idx;
-			if(waveIdx >= 20)
+			int waveIdx = (fireworkStep - FW_SETOFF) - idx;
+			if(waveIdx >= FW_LENGTH)
 				hcv_color.v = 0;
 			else if(waveIdx < 0)
 			    hcv_color.v = 0;
 			else 
-				hcv_color.v = (float)(wave[waveIdx]) / 1000;
+				hcv_color.v = (float)(wave[waveIdx]) / 500;
 			StripSetLed(0, i, hsv2rgb(hcv_color));
 		}
 	}
 	fireworkStep++;
-	if(fireworkStep > 500)
+	if(fireworkStep > 150)
 		fireworkStep = 0;
 }
 
@@ -182,8 +209,9 @@ int main(void)
   hcv_color.s = 1.0;
   hcv_color.v = 0.1;
 
-  int num = 0;
+  int num = 4;
   int buttonTrg = 0;
+  int pulse = 0;
   while (1)
   {
 	  if(HAL_GPIO_ReadPin(USER_Btn_GPIO_Port, USER_Btn_Pin) == GPIO_PIN_SET)
@@ -228,12 +256,19 @@ int main(void)
 
     /* USER CODE END WHILE */
 	  HAL_Delay(20);
-	  HAL_GPIO_WritePin(GPIOB, LD2_Pin, GPIO_PIN_RESET);
-	  HAL_GPIO_WritePin(GPIOB, LD3_Pin, GPIO_PIN_SET);
+	  if(pulse)
+	  {
+		  pulse = 0;
+		  HAL_GPIO_WritePin(GPIOB, LD2_Pin, GPIO_PIN_RESET);
+		  HAL_GPIO_WritePin(GPIOB, LD3_Pin, GPIO_PIN_SET);
+	  }
+	  else
+	  {
+		  pulse = 1;
+		  HAL_GPIO_WritePin(GPIOB, LD2_Pin, GPIO_PIN_SET);
+		  HAL_GPIO_WritePin(GPIOB, LD3_Pin, GPIO_PIN_RESET);
+	  }
 
-	  HAL_Delay(20);
-	  HAL_GPIO_WritePin(GPIOB, LD2_Pin, GPIO_PIN_SET);
-	  HAL_GPIO_WritePin(GPIOB, LD3_Pin, GPIO_PIN_RESET);
 
     /* USER CODE BEGIN 3 */
   }
