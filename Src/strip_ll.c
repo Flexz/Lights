@@ -1,10 +1,11 @@
 /*
  * strip_ll.c
  *
- *  Created on: 28 ���. 2020 �.
+ *  Created on: 28 Dec. 2020
  *      Author: Flexz
  */
 
+#include "main.h"
 #include "strip_ll.h"
 #include "stm32h7xx_hal.h"
 
@@ -18,17 +19,12 @@ static void TIM6_Init(void);
 static void UpdateByte(volatile uint16_t *ptr, uint8_t value);
 
 static volatile int enabled;
-
-//uint16_t ticks[10] = {50, 100, 150, 200, 250, 300, 350, 400, 450, 0};
-//uint32_t ticks[10] = {100, 100, 100, 100, 100, 100, 100, 100, 100, 100};
-//uint16_t ticks[10] = {100, 200, 300, 100, 100, 100, 100, 100, 100, 100};
-//uint16_t ticks[10] = {100, 200, 300, 200, 300, 200, 300, 200, 300, 200};
+/**
+ * Длительности импульсов для каждого разряда
+ * Дополнительный разряд в конце - для обнуления линии (импульс нулевой длительности оставит линию в состоянии сброса)
+ * Инициализация тут только для того, чтобы массив ушел в сегмент data, который доступен для DMA (секция RAM_D1, см. скрипт линкера)
+ */
 volatile uint16_t bits1[TOTAL_BITS+1] = {0,1};
-volatile uint16_t bits2[TOTAL_BITS+1] = {0,1};
-
-
-//uint16_t *bitsCurrent = bits1;
-
 
 void StripLLInit()
 {
@@ -36,19 +32,12 @@ void StripLLInit()
 	__HAL_RCC_TIM6_CLK_ENABLE();
 	__HAL_RCC_DMA1_CLK_ENABLE();
 	__HAL_RCC_DMA2_CLK_ENABLE();
-	//__HAL_DBGMCU_FREEZE_TIM1();
-
-	//500 -> 2.5uS
-	//250 -> 1.25uS
-	//200 -> 1.0uS
-	//100 -> 0.5uS
+	//Инициализация массива
 	for(int i = 0; i < TOTAL_BITS; i++)
 	{
-		bits1[i] = 100;
-		bits2[i] = 100;
+		bits1[i] = T_ZERO;
 	}
-	bits1[TOTAL_BITS] = 0;
-	bits2[TOTAL_BITS] = 0;
+	bits1[TOTAL_BITS] = 0;//Добавить импульс нулевой длительности для сброса линии
 	enabled = 0;
 
 	Dma_Init();
@@ -72,6 +61,21 @@ void StripLLSet(int channel, rgb *data, int cnt)
 	bits1[TOTAL_BITS] = 0;
 }
 
+void UpdateByte(volatile uint16_t *ptr, uint8_t value)
+{
+	for(int i = 0; i < 8; i++)
+	{
+		if(value & (1 << (7-i)))
+		{
+			ptr[i] = T_ONE;
+		}
+		else
+		{
+			ptr[i] = T_ZERO;
+		}
+	}
+}
+
 void StripLLEnable(int enable)
 {
 	enabled = enable;
@@ -86,9 +90,6 @@ static void TIM1_Init(void)
 {
   TIM_OC_InitTypeDef sConfigOC = {0};
 
-  /* USER CODE BEGIN TIM1_Init 1 */
-
-  /* USER CODE END TIM1_Init 1 */
   htim1.Instance = TIM1;
   htim1.Init.Prescaler = T_PRESCALER;
   htim1.Init.CounterMode = TIM_COUNTERMODE_UP;
@@ -115,13 +116,6 @@ static void TIM1_Init(void)
   {
     Error_Handler();
   }
-
-  /* USER CODE BEGIN TIM1_Init 2 */
-
-  /* USER CODE END TIM1_Init 2 */
-  //HAL_TIM_MspPostInit(&htim1);
-
-  //HAL_TIM_PWM_Start_DMA(&htim1, TIM_CHANNEL_1, (uint32_t*)bitsCurrent, TOTAL_BITS);
 }
 
 void TIM6_Init()
@@ -182,12 +176,8 @@ void Dma_Init()
 void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim)
 {
 	htim6.Instance->CNT = 0;
-	//for(int i = 0; i < 1000; i++)__NOP();
 	HAL_TIM_PWM_Stop_DMA(&htim1, TIM_CHANNEL_1);
 	HAL_TIM_Base_Start_IT(&htim6);
-	//htim6.Instance->CR1 |= TIM_CR1_CEN;
-	//__HAL_TIM_ENABLE_IT(&htim6, TIM_IT_UPDATE);
-	//__HAL_TIM_ENABLE(&htim6);
 }
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
@@ -222,17 +212,3 @@ void DMA1_Stream0_IRQHandler()
 	HAL_DMA_IRQHandler(htim1.hdma[TIM_DMA_ID_CC1]);
 }
 
-void UpdateByte(volatile uint16_t *ptr, uint8_t value)
-{
-	for(int i = 0; i < 8; i++)
-	{
-		if(value & (1 << (7-i)))
-		{
-			ptr[i] = T_ONE;
-		}
-		else
-		{
-			ptr[i] = T_ZERO;
-		}
-	}
-}

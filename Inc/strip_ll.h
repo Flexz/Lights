@@ -1,7 +1,7 @@
 /*
  * strip_ll.h
  *
- *  Created on: 28 дек. 2020 г.
+ *  Created on: 28 Dec. 2020 y.
  *      Author: Flexz
  */
 
@@ -12,7 +12,6 @@
 #include "colors.h"
 
 #define BITS_PER_LED	24
-//#define LED_COUNT		100
 #define TOTAL_BITS		(BITS_PER_LED * CFG_STRIP_LEDS)
 
 //200Mhz / (Prescaler+1) / Pulse

@@ -16,6 +16,7 @@ void StripInit()
 	StripLLInit();
 	StripClear(rgb_create(0,0,0));
 	StripUpdate();
+	StripLLEnable(1);
 }
 
 void LedSet(int channel, int idx, rgb color)
@@ -40,6 +41,11 @@ void StripSetLed(int channel, int led, rgb color)
 	if(led < 0)
 		return;
 	LedSet(channel, led, color);
+}
+
+rgb StripGetLed(int channel, int idx)
+{
+	return strip[channel][idx];
 }
 
 void StripClear(rgb color)

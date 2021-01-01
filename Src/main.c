@@ -179,6 +179,34 @@ void Flag()
 		StripSetLed(0, i, color);
 	}
 }
+
+int runnerStep = 0;
+int runnerDir = 1;
+void Runner()
+{
+	hsv h;
+	HAL_Delay(25);
+	for(int i = 0; i < CFG_STRIP_LEDS; i++)
+	{
+		rgb old = StripGetLed(0, i);
+		h = rgb2hsv(old);
+		h.v *= 0.8;
+		StripSetLed(0, i, hsv2rgb(h));
+	}
+	h.s = 0;
+	h.h = 0;
+	h.v = 1.0;
+	StripSetLed(0, runnerStep, hsv2rgb(h));
+	runnerStep = runnerStep + runnerDir;
+	if(runnerStep == CFG_STRIP_LEDS - 1)
+	{
+		runnerDir = -1;
+	}
+	if(runnerStep == 0)
+	{
+		runnerDir = 1;
+	}
+}
 /* USER CODE END 0 */
 
 /**
@@ -199,7 +227,6 @@ int main(void)
 
   /* USER CODE BEGIN 2 */
   StripInit();
-  StripLLEnable(1);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -219,7 +246,7 @@ int main(void)
 		  if(buttonTrg == 4)
 		  {
 			  num++;
-			  if(num > 5)
+			  if(num > 6)
 				  num = 0;
 		  }
 		  buttonTrg++;
@@ -250,6 +277,9 @@ int main(void)
 		  break;
 	  case 5:
 		  Flag();
+		  break;
+	  case 6:
+		  Runner();
 		  break;
 	  }
 	  StripUpdate();
